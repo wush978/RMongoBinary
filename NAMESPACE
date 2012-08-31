@@ -1,0 +1,4 @@
+import(rmongodb)
+import(digest)
+
+exportClasses( BMongo )

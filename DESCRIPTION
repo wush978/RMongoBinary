@@ -1,0 +1,10 @@
+Package: RMongoBinary
+Type: Package
+Title: A Wrapper of rmongodb to save/load Robj in binary
+Version: 0.1
+Date: 2012-08-31
+Author: Wush Wu
+Maintainer: Wush Wu <wush978@gmail.com>
+Description: An easy to use interface to save R object into MongoDB in binary
+Depends: R (>= 2.14.1), rmongodb (>= 1.0.3), digest(>= 0.5.2)
+License: GPL-2
