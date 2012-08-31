@@ -21,6 +21,8 @@ setMethod("$", "BMongo", function(x, name) {
 	switch(name, 
 		save = function(R_obj, obj_name) save(x, R_obj, obj_name),
 		load = function(obj_name) load(x, obj_name),
-		dropDB = function() dropDB(x)
+		resetDB = function() resetDB(x),
+		dropDB = function() dropDB(x),
+		closeDB = function() closeDB(x)
 	)})
 

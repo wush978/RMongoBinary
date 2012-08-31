@@ -18,7 +18,6 @@ getQuery <- function(name) {
 
 save <- function(x, R_obj, obj_name) {
 	mongo <- x@mongo
-	checkAlive(mongo)
 	db <- x@db
 	ns <- x@ns
 	Robj.binary <- serialize(R_obj, NULL, FALSE)
@@ -30,7 +29,7 @@ save <- function(x, R_obj, obj_name) {
 		mongo.insert(mongo, ns, b)
 		err <- mongo.get.last.err(mongo, db)
 		if (!is.null(err)) {
-			stop(mongo.getdrop.server.err.string(mongo))
+			stop(mongo.get.server.err.string(mongo))
 		}
 	}
 	else {
@@ -54,7 +53,6 @@ save <- function(x, R_obj, obj_name) {
 
 load <- function(x, obj_name) {
 	mongo <- x@mongo
-	checkAlive(mongo)
 	db <- x@db
 	ns <- x@ns
 	b <- mongo.find.one(mongo, ns, getQuery(obj_name[1]))
@@ -80,10 +78,25 @@ load <- function(x, obj_name) {
 	return(unserialize(Robj.binary))
 }
 
+resetDB <- function(x) {
+	checkAlive(x@mongo)
+	if (!mongo.drop.database(x@mongo, x@db)) {
+		stop("Drop Database Failed")
+	}
+	mongo.index.create(x@mongo, x@ns, "name", mongo.index.unique)
+}
+
 dropDB <- function(x) {
 	checkAlive(x@mongo)
 	if (!mongo.drop.database(x@mongo, x@db)) {
 		stop("Drop Database Failed")
 	}
+	mongo.disconnect(x@mongo)
+	TRUE
+}
+
+closeDB <- function(x) {
+	mongo.disconnect(x@mongo)
+	TRUE
 }
 	
