@@ -73,6 +73,7 @@ load <- function(x, obj_name) {
 	Robj.binary <- mongo.gridfile.read(gf,gf.size)
 	mongo.gridfile.destroy(gf)
 	mongo.gridfs.destroy(gridfs)
+	Robj.binary <- memDecompress(Robj.binary, mongo.bson.value(b, "compression"))
 	return(unserialize(Robj.binary))
 }
 
