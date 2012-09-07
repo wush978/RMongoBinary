@@ -9,7 +9,7 @@ setClass(
 	prototype(mongo = NULL, size_limit = 16777200L, db = NULL, ns = NULL))
 
 setMethod("initialize", "BMongo", function(.Object, host = "127.0.0.1", name = "", username = "", password = "", db = "admin", timeout = 0L) {
-	.Object@mongo = mongo.create(host, name, username, password, db, timeout)
+	.Object@mongo = mongo.create(host, name, username, password, "admin", timeout)
 	checkAlive(.Object@mongo)
 	.Object@db = db
 	.Object@ns = paste(db, "RObject", sep=".")

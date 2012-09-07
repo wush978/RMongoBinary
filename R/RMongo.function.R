@@ -16,38 +16,36 @@ getQuery <- function(name) {
 	return(mongo.bson.from.buffer(buf))
 }
 
-save <- function(x, R_obj, obj_name) {
+save <- function(x, R_obj, obj_name, compression = "none", parameter = list()) {
 	mongo <- x@mongo
 	db <- x@db
 	ns <- x@ns
 	Robj.binary <- serialize(R_obj, NULL, FALSE)
-	if (nchar(obj_name[1]) + length(Robj.binary) < x@size_limit) {
-		buf <- mongo.bson.buffer.create()
-		mongo.bson.buffer.append.string(buf, "name", obj_name[1])
+	Robj.binary <- memCompress(Robj.binary, compression)
+	buf <- mongo.bson.buffer.create()
+	mongo.bson.buffer.append.string(buf, "name", obj_name[1])
+	for(parameter.name in names(parameter)) {
+		parameter.element <- parameter[[parameter.name]]
+		mongo.bson.buffer.append(buf, parameter.name, parameter.element)
+	}
+	if (mongo.bson.buffer.size(buf) + length(Robj.binary) + nchar(compression[1]) + 30 < x@size_limit) {
+		mongo.bson.buffer.append.string(buf, "compression", compression)
 		mongo.bson.buffer.append.raw(buf, "Rdata", Robj.binary)
-		b <- mongo.bson.from.buffer(buf)
-		mongo.insert(mongo, ns, b)
-		err <- mongo.get.last.err(mongo, db)
-		if (!is.null(err)) {
-			stop(mongo.get.server.err.string(mongo))
-		}
 	}
 	else {
 		gridfs.name <- digest(Robj.binary, "md5", FALSE)
-		buf <- mongo.bson.buffer.create()
-		mongo.bson.buffer.append.string(buf, "name", obj_name[1])
 		mongo.bson.buffer.append.string(buf, "Rdata", gridfs.name)
-		b <- mongo.bson.from.buffer(buf)
-		mongo.insert(mongo, ns, b)
-		err <- mongo.get.last.err(mongo, db)
-		if (!is.null(err)) {
-			stop(mongo.get.server.err.string(mongo))
-		}
 		gridfs <- mongo.gridfs.create(mongo, db)
 		if (!mongo.gridfs.store(gridfs, Robj.binary, gridfs.name)) {
 			stop("Save GridFS Failed")
 		}
 		mongo.gridfs.destroy(gridfs)
+	}
+	b <- mongo.bson.from.buffer(buf)
+	mongo.insert(mongo, ns, b)
+	err <- mongo.get.last.err(mongo, db)
+	if (!is.null(err)) {
+		stop(mongo.get.server.err.string(mongo))
 	}
 }
 
