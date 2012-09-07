@@ -58,21 +58,20 @@ load <- function(x, obj_name) {
 		stop(paste("Object (name:",obj_name[1],") not found"))
 	}
 	Robj.binary <- mongo.bson.value(b, "Rdata")
-	if (is.raw(Robj.binary)) {
-		return(unserialize(Robj.binary))
+	if (!is.raw(Robj.binary)) {
+		# GridFS object
+		gridfs <- mongo.gridfs.create(mongo, db)
+		gridfs.name <- Robj.binary
+		gf <- mongo.gridfs.find(gridfs, gridfs.name)
+		if (is.null(gf)) {
+			stop("Logical Error: GridFS Not Found!!")
+		}
+		gf.size <- mongo.gridfile.get.length(gf)
+		mongo.gridfile.seek(gf, gf.size)
+		Robj.binary <- mongo.gridfile.read(gf,gf.size)
+		mongo.gridfile.destroy(gf)
+		mongo.gridfs.destroy(gridfs)
 	}
-	# GridFS object
-	gridfs <- mongo.gridfs.create(mongo, db)
-	gridfs.name <- Robj.binary
-	gf <- mongo.gridfs.find(gridfs, gridfs.name)
-	if (is.null(gf)) {
-		stop("Logical Error: GridFS Not Found!!")
-	}
-	gf.size <- mongo.gridfile.get.length(gf)
-	mongo.gridfile.seek(gf, gf.size)
-	Robj.binary <- mongo.gridfile.read(gf,gf.size)
-	mongo.gridfile.destroy(gf)
-	mongo.gridfs.destroy(gridfs)
 	Robj.binary <- memDecompress(Robj.binary, mongo.bson.value(b, "compression"))
 	return(unserialize(Robj.binary))
 }
