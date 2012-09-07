@@ -19,7 +19,7 @@ setMethod("initialize", "BMongo", function(.Object, host = "127.0.0.1", name = "
 
 setMethod("$", "BMongo", function(x, name) {
 	switch(name, 
-		save = function(R_obj, obj_name) save(x, R_obj, obj_name),
+		save = function(R_obj, obj_name, compression = "none", parameter = list()) save(x, R_obj, obj_name, compression, parameter),
 		load = function(obj_name) load(x, obj_name),
 		resetDB = function() resetDB(x),
 		dropDB = function() dropDB(x),
